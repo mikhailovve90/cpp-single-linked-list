@@ -109,6 +109,7 @@ class SingleLinkedList {
         // Вызов этого оператора у итератора, не указывающего на существующий элемент списка,
         // приводит к неопределённому поведению
         [[nodiscard]] reference operator*() const noexcept {
+            assert(node_ != nullptr);
             return node_-> value;
         }
 
@@ -116,6 +117,7 @@ class SingleLinkedList {
         // Вызов этого оператора у итератора, не указывающего на существующий элемент списка,
         // приводит к неопределённому поведению
         [[nodiscard]] pointer operator->() const noexcept {
+            assert(node_ != nullptr);
             return &node_->value;
         }
 
@@ -219,6 +221,7 @@ public:
          * Если при создании элемента будет выброшено исключение, список останется в прежнем состоянии
          */
     Iterator InsertAfter(ConstIterator pos, const Type& value) {
+        assert(pos.node_ != nullptr);
         Node *next_node = pos.node_->next_node;
         Node *i_a_node = new Node(value, next_node);
         pos.node_->next_node = i_a_node;
@@ -243,6 +246,7 @@ public:
          * Возвращает итератор на элемент, следующий за удалённым
          */
     Iterator EraseAfter(ConstIterator pos) noexcept {
+        assert(pos.node_ != nullptr);
         Node *n_n = pos.node_->next_node;
         Node *n_n_n = n_n->next_node;
         if(size_ > 0){
@@ -291,12 +295,10 @@ public:
 
     // Обменивает содержимое списков за время O(1)
     void swap(SingleLinkedList& other) noexcept {
-        int curr_size = size_;
         Node *head_next = head_.next_node;
-        size_ = other.size_;
         head_.next_node = other.head_.next_node;
-        other.size_ = curr_size;
         other.head_.next_node = head_next;
+        std::swap(size_, other.size_);
     }
 
     SingleLinkedList(std::initializer_list<Type> values) {
@@ -308,15 +310,15 @@ public:
     SingleLinkedList(const SingleLinkedList& other) {
         SingleLinkedList lst1;
         SingleLinkedList lst2;
-
-        for(auto val : other){
-            lst1.PushFront(val);
+        auto lst1_iter = lst1.before_begin();
+        auto other_iter = other.begin();
+        while(other_iter != other.end()){
+            lst1.InsertAfter(lst1_iter, *other_iter);
+            ++lst1_iter;
+            ++other_iter;
         }
 
-        for(auto val : lst1){
-            lst2.PushFront(val);
-        }
-        swap(lst2);
+        swap(lst1);
     }
 
     SingleLinkedList& operator=(const SingleLinkedList& rhs) {
@@ -938,3 +940,4 @@ int main() {
     Test3();
      Test4();
 }
+
